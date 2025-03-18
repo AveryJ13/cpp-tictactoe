@@ -3,13 +3,15 @@
 using namespace std;
 
 void drawGameBoard(char *gameArray);
-void inputMove(char *gameArray, string *findIndex, string input, char *playerType);
-void switchPlayer(char *playerType);
+bool inputMove(char *gameArray, string *findIndex, string input, char playerType, int size);
+bool checkVictory(char *gameArray, char playerType);
+bool checkDraw(char *gameArray, int size);
 
 int main()
 {
     char gameArray[9] = {'*', '*', '*', '*', '*', '*', '*', '*', '*'};
     string findIndex[9] = {"a1", "a2", "a3", "b1", "b2", "b3", "c1", "c2", "c3"};
+    int size = sizeof(findIndex) / sizeof(findIndex[0]);
     char playerType = 'X';
     string input;
     bool gameLoop = true;
@@ -19,8 +21,25 @@ int main()
         drawGameBoard(gameArray);
         cout << playerType << " to move, input cell above (ex) a1" << endl;
         cin >> input;
-        inputMove(gameArray, findIndex, input, &playerType);
-        switchPlayer(&playerType);
+        if (inputMove(gameArray, findIndex, input, playerType, size))
+        {
+            if (checkVictory(gameArray, playerType))
+            {
+                drawGameBoard(gameArray);
+                cout << playerType << " wins" << endl;
+                gameLoop = false;
+            }
+            else if (checkDraw(gameArray, size))
+            {
+                drawGameBoard(gameArray);
+                cout << "draw game" << endl;
+                gameLoop = false;
+            }
+            else
+            {
+                playerType = (playerType == 'X') ? 'O' : 'X';
+            }
+        }
     }
     return 0;
 }
@@ -33,25 +52,49 @@ void drawGameBoard(char *gameArray)
     cout << "c " << gameArray[6] << " " << gameArray[7] << " " << gameArray[8] << endl;
 }
 
-void inputMove(char *gameArray, string *findIndex, string input, char *playerType)
+bool inputMove(char *gameArray, string *findIndex, string input, char playerType, int size)
 {
-    for (int i = 0; i < 9; i++)
+    for (int i = 0; i < size; i++)
     {
         if (findIndex[i] == input)
         {
-            gameArray[i] = *playerType;
-            return;
+            if (gameArray[i] == '*')
+            {
+                gameArray[i] = playerType;
+                return true;
+            }
         }
     }
     cout << "please enter a valid input" << endl;
+    return false;
 }
 
-void switchPlayer(char *playerType)
+bool checkVictory(char *gameArray, char playerType)
 {
-    if (*playerType == 'X')
+    for (int i = 0; i < 3; i++)
     {
-        *playerType = 'O';
+        if (gameArray[i * 3] == playerType && gameArray[i * 3 + 1] == playerType && gameArray[i * 3 + 2] == playerType)
+            return true;
+        if (gameArray[i] == playerType && gameArray[i + 3] == playerType && gameArray[i + 6] == playerType)
+            return true;
     }
-    else
-        *playerType = 'X';
+
+    if (gameArray[0] == playerType && gameArray[4] == playerType && gameArray[8] == playerType)
+        return true;
+    if (gameArray[2] == playerType && gameArray[4] == playerType && gameArray[6] == playerType)
+        return true;
+
+    return false;
+}
+
+bool checkDraw(char *gameArray, int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        if (gameArray[i] == '*')
+        {
+            return false;
+        }
+    }
+    return true;
 }
